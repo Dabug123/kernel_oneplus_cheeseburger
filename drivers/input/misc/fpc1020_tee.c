@@ -179,52 +179,41 @@ static int hw_reset(struct  fpc1020_data *fpc1020)
 {
 	int irq_gpio;
 	struct device *dev = fpc1020->dev;
-
 	int rc = select_pin_ctl(fpc1020, "fpc1020_reset_active");
 	if (rc)
 		goto exit;
 	usleep_range(FPC1020_RESET_HIGH1_US, FPC1020_RESET_HIGH1_US + 100);
-
 	rc = select_pin_ctl(fpc1020, "fpc1020_reset_reset");
 	if (rc)
 		goto exit;
 	usleep_range(FPC1020_RESET_LOW_US, FPC1020_RESET_LOW_US + 100);
-
 	rc = select_pin_ctl(fpc1020, "fpc1020_reset_active");
 	if (rc)
 		goto exit;
 	usleep_range(FPC1020_RESET_HIGH1_US, FPC1020_RESET_HIGH1_US + 100);
-
 	irq_gpio = gpio_get_value(fpc1020->irq_gpio);
 	dev_info(dev, "IRQ after reset %d\n", irq_gpio);
 exit:
 	return rc;
 }
-
 static int hw_reset(struct  fpc1020_data *fpc1020)
 {
     int irq_gpio;
 	struct device *dev = fpc1020->dev;
 	int counter = 2;
-
 	gpio_set_value(fpc1020->EN_VDD_gpio, 0);
     mdelay(3);
 	gpio_set_value(fpc1020->EN_VDD_gpio, 1);
 	mdelay(3);
 	//gpio_direction_output(fpc1020->EN_VDD_gpio,1);
-
 	while (counter) {
 		counter--;
-
 		gpio_set_value(fpc1020->rst_gpio, 1);
 		udelay(FPC1020_RESET_HIGH1_US);
-
 		gpio_set_value(fpc1020->rst_gpio, 0);
 		udelay(FPC1020_RESET_LOW_US);
-
 		gpio_set_value(fpc1020->rst_gpio, 1);
 		udelay(FPC1020_RESET_HIGH2_US);
-
 		irq_gpio = gpio_get_value(fpc1020->irq_gpio);
 		dev_err(dev, "IRQ after reset %d\n", irq_gpio);
 		if (irq_gpio) {
@@ -233,7 +222,6 @@ static int hw_reset(struct  fpc1020_data *fpc1020)
 		} else {
 			dev_err(dev, "%s timed out,retrying ...\n",
 				__func__);
-
 			udelay(1250);
 		}
 	}
@@ -244,7 +232,6 @@ static ssize_t hw_reset_set(struct device *dev,
 {
 	int rc;
 	struct  fpc1020_data *fpc1020 = dev_get_drvdata(dev);
-
 	if (!strncmp(buf, "reset", strlen("reset")))
 		rc = hw_reset(fpc1020);
 	else
@@ -252,7 +239,6 @@ static ssize_t hw_reset_set(struct device *dev,
 	return rc ? rc : count;
 }
 static DEVICE_ATTR(hw_reset, S_IWUSR, NULL, hw_reset_set);
-
 */
 /**
  * sysf node to check the interrupt status of the sensor, the interrupt
@@ -288,7 +274,6 @@ static DEVICE_ATTR(irq, S_IRUSR | S_IWUSR, irq_get, irq_ack);
 extern void int_touch(void);
 extern struct completion key_cm;
 extern bool virtual_key_enable;
-
 bool key_home_pressed = false;
 EXPORT_SYMBOL(key_home_pressed);
 #endif*/
@@ -623,13 +608,11 @@ static int fpc1020_probe(struct platform_device *pdev)
 	
     #if 0 //changhua remove HW reset here,move to HAL,after spi cs pin become high
 	rc = gpio_direction_output(fpc1020->rst_gpio, 1);
-
 	if (rc) {
 		dev_err(fpc1020->dev,
 			"gpio_direction_output (reset) failed.\n");
 		goto exit;
 	}
-
 	gpio_set_value(fpc1020->rst_gpio, 1);
 	udelay(FPC1020_RESET_HIGH1_US);
 	
